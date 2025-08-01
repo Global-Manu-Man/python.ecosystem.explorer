@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Ecosystem Explorer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #ffeb3b, #ff9800, #f44336);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 20px rgba(255, 235, 59, 0.3)); }
+            to { filter: drop-shadow(0 0 30px rgba(255, 152, 0, 0.5)); }
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        .search-container {
+            position: relative;
+            max-width: 500px;
+            margin: 0 auto 40px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.02);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .categories {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .category-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .category-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .category-btn.active {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            transform: scale(1.05);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .card:hover::before {
+            left: 100%;
+        }
+
+        .card:hover {
+            transform: translateY(-10px) rotateX(5deg);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            color: #ffffff;
+        }
+
+        .card-category {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .card p {
+            line-height: 1.6;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        .card-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .feature-tag {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(30px);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translate(-50%, -60%) scale(0.8); opacity: 0; }
+            to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 30px;
+            cursor: pointer;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .close:hover {
+            transform: rotate(90deg);
+            color: #ff6b6b;
+        }
+
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: float 6s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2.5rem; }
+            .grid { grid-template-columns: 1fr; }
+            .categories { flex-direction: column; align-items: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-particles" id="particles"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🐍 Python Ecosystem Explorer</h1>
+            <p>Descubre el increíble mundo de frameworks y librerías de Python</p>
+            
+            <div class="search-container">
+                <input type="text" class="search-input" id="searchInput" placeholder="Buscar frameworks, librerías...">
+            </div>
+            
+            <div class="categories">
+                <button class="category-btn active" data-category="all">Todos</button>
+                <button class="category-btn" data-category="web">Web</button>
+                <button class="category-btn" data-category="data">Data Science</button>
+                <button class="category-btn" data-category="ml">Machine Learning</button>
+                <button class="category-btn" data-category="gui">GUI</button>
+                <button class="category-btn" data-category="testing">Testing</button>
+                <button class="category-btn" data-category="database">Database</button>
+            </div>
+        </div>
+        
+        <div class="grid" id="frameworkGrid"></div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const frameworks = [
+            {
+                name: "Django",
+                category: "web",
+                icon: "🌟",
+                color: "linear-gradient(45deg, #092e20, #0c4b33)",
+                description: "Framework web de alto nivel que fomenta el desarrollo rápido y el diseño limpio y pragmático.",
+                features: ["ORM integrado", "Admin automático", "Seguridad robusta", "Escalable"],
+                details: "Django es perfecto para aplicaciones web complejas. Incluye todo lo necesario: autenticación, admin panel, ORM, routing, templating y más. Usado por Instagram, Pinterest y Spotify."
+            },
+            {
+                name: "Flask",
+                category: "web",
+                icon: "🍶",
+                color: "linear-gradient(45deg, #000000, #4a4a4a)",
+                description: "Microframework web flexible y ligero para aplicaciones Python.",
+                features: ["Minimalista", "Flexible", "Extensible", "WSGI"],
+                details: "Flask es ideal para aplicaciones pequeñas y medianas. Su filosofía minimalista permite gran flexibilidad. Perfecto para APIs y prototipos rápidos."
+            },
+            {
+                name: "FastAPI",
+                category: "web",
+                icon: "⚡",
+                color: "linear-gradient(45deg, #009688, #4caf50)",
+                description: "Framework web moderno y de alta performance para construir APIs con Python 3.6+.",
+                features: ["Muy rápido", "Type hints", "Auto docs", "Async nativo"],
+                details: "FastAPI combina velocidad con facilidad de uso. Genera documentación automática, soporta async/await nativo y tiene validación automática de datos."
+            },
+            {
+                name: "NumPy",
+                category: "data",
+                icon: "🔢",
+                color: "linear-gradient(45deg, #013243, #4dabf7)",
+                description: "Biblioteca fundamental para computación científica con Python.",
+                features: ["Arrays N-dimensionales", "Operaciones matemáticas", "Broadcasting", "Interoperabilidad C/C++"],
+                details: "NumPy es la base del ecosistema científico de Python. Proporciona estructuras de datos eficientes y operaciones matemáticas optimizadas."
+            },
+            {
+                name: "Pandas",
+                category: "data",
+                icon: "🐼",
+                color: "linear-gradient(45deg, #150458, #3f0f7f)",
+                description: "Biblioteca de análisis y manipulación de datos potente y flexible.",
+                features: ["DataFrames", "Limpieza de datos", "Análisis estadístico", "I/O múltiple"],
+                details: "Pandas hace que el análisis de datos sea intuitivo. Perfect para manipular, limpiar y analizar datos estructurados con una API similar a R y SQL."
+            },
+            {
+                name: "Matplotlib",
+                category: "data",
+                icon: "📊",
+                color: "linear-gradient(45deg, #11557c, #1f77b4)",
+                description: "Biblioteca de visualización 2D completa y flexible.",
+                features: ["Gráficos estáticos", "Animaciones", "Interactivos", "Publicación"],
+                details: "Matplotlib es el estándar para visualización en Python. Desde gráficos simples hasta visualizaciones complejas para publicaciones científicas."
+            },
+            {
+                name: "Scikit-learn",
+                category: "ml",
+                icon: "🤖",
+                color: "linear-gradient(45deg, #f7931e, #ff6b35)",
+                description: "Biblioteca de machine learning simple y eficiente.",
+                features: ["Clasificación", "Regresión", "Clustering", "Preprocessing"],
+                details: "Scikit-learn democratiza el machine learning. Algoritmos probados, API consistente y excelente documentación para principiantes y expertos."
+            },
+            {
+                name: "TensorFlow",
+                category: "ml",
+                icon: "🧠",
+                color: "linear-gradient(45deg, #ff6f00, #ff8f00)",
+                description: "Plataforma de machine learning de extremo a extremo de código abierto.",
+                features: ["Deep Learning", "Producción", "Mobile/Edge", "Investigación"],
+                details: "TensorFlow permite desde prototipado de investigación hasta implementación en producción. Excelente para deep learning y redes neuronales complejas."
+            },
+            {
+                name: "PyTorch",
+                category: "ml",
+                icon: "🔥",
+                color: "linear-gradient(45deg, #ee4c2c, #ff6b35)",
+                description: "Framework de machine learning que prioriza la flexibilidad y velocidad.",
+                features: ["Dynamic graphs", "Pythonic", "Research-first", "GPU acceleration"],
+                details: "PyTorch es el favorito de los investigadores. Gráficos dinámicos, debugging intuitivo y transición fluida de investigación a producción."
+            },
+            {
+                name: "Tkinter",
+                category: "gui",
+                icon: "🖼️",
+                color: "linear-gradient(45deg, #2e7d32, #4caf50)",
+                description: "Biblioteca GUI estándar de Python para aplicaciones de escritorio.",
+                features: ["Multiplataforma", "Integrado", "Widgets básicos", "Event-driven"],
+                details: "Tkinter viene incluido con Python. Ideal para aplicaciones GUI simples y prototipos rápidos sin dependencias externas."
+            },
+            {
+                name: "PyQt",
+                category: "gui",
+                icon: "⚙️",
+                color: "linear-gradient(45deg, #41cd52, #00b4d8)",
+                description: "Conjunto de enlaces Python para Qt, framework de aplicaciones multiplataforma.",
+                features: ["Nativo", "Completo", "Multiplataforma", "Profesional"],
+                details: "PyQt permite crear aplicaciones de escritorio profesionales. Widgets avanzados, theming nativo y apariencia profesional en todas las plataformas."
+            },
+            {
+                name: "Pytest",
+                category: "testing",
+                icon: "🧪",
+                color: "linear-gradient(45deg, #0e4b99, #2e8b57)",
+                description: "Framework de testing maduro y con todas las características.",
+                features: ["Sintaxis simple", "Fixtures", "Plugins", "Parametrización"],
+                details: "Pytest hace que el testing sea placentero. Sintaxis limpia, fixtures poderosas y un ecosistema rico de plugins para cualquier necesidad."
+            },
+            {
+                name: "SQLAlchemy",
+                category: "database",
+                icon: "🗃️",
+                color: "linear-gradient(45deg, #d32f2f, #f44336)",
+                description: "Toolkit SQL y Object-Relational Mapping (ORM) para Python.",
+                features: ["ORM potente", "Query builder", "Migraciones", "Multi-database"],
+                details: "SQLAlchemy es el ORM más potente de Python. Desde queries SQL raw hasta mapeo objeto-relacional sofisticado, maneja cualquier caso de uso."
+            },
+            {
+                name: "Requests",
+                category: "web",
+                icon: "🌐",
+                color: "linear-gradient(45deg, #3f51b5, #2196f3)",
+                description: "Biblioteca HTTP elegante y simple para humanos.",
+                features: ["API simple", "Sessions", "SSL/TLS", "Cookies automáticas"],
+                details: "Requests hace que las peticiones HTTP sean humanamente legibles. API intuitiva que abstrae la complejidad de urllib con elegancia."
+            },
+            {
+                name: "Celery",
+                category: "web",
+                icon: "🌿",
+                color: "linear-gradient(45deg, #37a000, #4caf50)",
+                description: "Cola de tareas distribuida asíncrona y en tiempo real.",
+                features: ["Async tasks", "Distributed", "Scheduling", "Monitoring"],
+                details: "Celery permite procesar tareas en background y distribuirlas. Perfecto para operaciones pesadas, emails, procesamiento de imágenes y más."
+            },
+            {
+                name: "Jupyter",
+                category: "data",
+                icon: "📓",
+                color: "linear-gradient(45deg, #f37626, #f57c00)",
+                description: "Notebooks interactivos para ciencia de datos y computación.",
+                features: ["Interactivo", "Visualizaciones", "Markdown", "Multi-lenguaje"],
+                details: "Jupyter revolucionó la ciencia de datos. Combina código, visualizaciones y narrativa en un formato interactivo ideal para análisis y presentaciones."
+            }
+        ];
+
+        let filteredFrameworks = [...frameworks];
+
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        function renderFrameworks(frameworksToRender = filteredFrameworks) {
+            const grid = document.getElementById('frameworkGrid');
+            grid.innerHTML = '';
+
+            frameworksToRender.forEach(framework => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-icon" style="background: ${framework.color}">
+                            ${framework.icon}
+                        </div>
+                        <div>
+                            <h3>${framework.name}</h3>
+                            <div class="card-category">${framework.category}</div>
+                        </div>
+                    </div>
+                    <p>${framework.description}</p>
+                    <div class="card-features">
+                        ${framework.features.map(feature => 
+                            `<span class="feature-tag">${feature}</span>`
+                        ).join('')}
+                    </div>
+                `;
+
+                card.addEventListener('click', () => showModal(framework));
+                grid.appendChild(card);
+            });
+        }
+
+        function showModal(framework) {
+            const modal = document.getElementById('modal');
+            const modalContent = document.getElementById('modalContent');
+            
+            modalContent.innerHTML = `
+                <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                    <div class="card-icon" style="background: ${framework.color}; margin-right: 20px; width: 60px; height: 60px; font-size: 30px;">
+                        ${framework.icon}
+                    </div>
+                    <div>
+                        <h2 style="margin-bottom: 5px;">${framework.name}</h2>
+                        <div style="opacity: 0.7; text-transform: uppercase; letter-spacing: 1px;">${framework.category}</div>
+                    </div>
+                </div>
+                <p style="margin-bottom: 20px; font-size: 1.1rem; line-height: 1.6;">${framework.details}</p>
+                <div style="margin-bottom: 15px;">
+                    <h4 style="margin-bottom: 10px;">Características principales:</h4>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        ${framework.features.map(feature => 
+                            `<span style="background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 15px; font-size: 0.9rem;">${feature}</span>`
+                        ).join('')}
+                    </div>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+        }
+
+        function filterFrameworks(category) {
+            if (category === 'all') {
+                filteredFrameworks = [...frameworks];
+            } else {
+                filteredFrameworks = frameworks.filter(f => f.category === category);
+            }
+            renderFrameworks();
+        }
+
+        function searchFrameworks(query) {
+            const filtered = filteredFrameworks.filter(framework =>
+                framework.name.toLowerCase().includes(query.toLowerCase()) ||
+                framework.description.toLowerCase().includes(query.toLowerCase()) ||
+                framework.features.some(feature => feature.toLowerCase().includes(query.toLowerCase()))
+            );
+            renderFrameworks(filtered);
+        }
+
+        // Event Listeners
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            searchFrameworks(e.target.value);
+        });
+
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                filterFrameworks(e.target.dataset.category);
+            });
+        });
+
+        document.querySelector('.close').addEventListener('click', () => {
+            document.getElementById('modal').style.display = 'none';
+        });
+
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target.id === 'modal') {
+                document.getElementById('modal').style.display = 'none';
+            }
+        });
+
+        // Initialize
+        createParticles();
+        renderFrameworks();
+    </script>
+</body>
+</html>
